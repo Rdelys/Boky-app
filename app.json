@@ -1,0 +1,34 @@
+{
+  "expo": {
+    "name": "Ny Herin'ny Boky",
+    "slug": "ny-herin-ny-boky",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#f6efdd",
+    "splash": {
+      "backgroundColor": "#55101d",
+      "resizeMode": "contain"
+    },
+    "assetBundlePatterns": [
+      "assets/**/*",
+      "**/*.{png,jpg,jpeg,gif,svg,webp,ttf,otf,woff,woff2}"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "mg.nyherinnyboky.app"
+    },
+    "android": {
+      "package": "mg.nyherinnyboky.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#55101d"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    },
+    "extra": {
+      "eas": {}
+    }
+  }
+}
