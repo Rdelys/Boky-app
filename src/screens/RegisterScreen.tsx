@@ -9,11 +9,13 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { parseApiError } from '../api/client';
 import { Button } from '../components/Button';
 import { colors, fonts, radius, shadows, spacing } from '../theme/colors';
+import { APP_NAME } from '../constants/app';
 
 export function RegisterScreen({ navigation }: any) {
   const { register } = useAuth();
@@ -47,9 +49,11 @@ export function RegisterScreen({ navigation }: any) {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <LinearGradient colors={[colors.maroon950, colors.maroon800]} style={StyleSheet.absoluteFill} />
       <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
         <View style={styles.logoWrap}>
           <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+          <Text style={styles.appName}>{APP_NAME}</Text>
         </View>
 
         <View style={styles.card}>
@@ -107,8 +111,9 @@ export function RegisterScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.maroon950 },
   scrollContent: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
-  logoWrap: { alignItems: 'center', marginBottom: spacing.lg },
+  logoWrap: { alignItems: 'center', marginBottom: spacing.lg, gap: 10 },
   logo: { width: 76, height: 76 },
+  appName: { color: colors.cream, fontFamily: fonts.serif, fontSize: 18, textAlign: 'center' },
   card: { backgroundColor: colors.cardBg, borderRadius: radius.xl, padding: 26, ...shadows.floating },
   title: { fontSize: 22, fontFamily: fonts.serif, color: colors.ink, textAlign: 'center', marginBottom: 4 },
   subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 20, fontFamily: fonts.sans },

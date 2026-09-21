@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Animated, Easing, Image, StyleSheet, Text, View } from 'react-native';
 import { colors, fonts, spacing } from '../theme/colors';
+import { APP_NAME } from '../constants/app';
 
 type Props = {
   /** Petit message optionnel sous le logo (ex: "Chargement..."). */
@@ -47,6 +48,7 @@ export function LoadingScreen({ label }: Props) {
           resizeMode="contain"
         />
       </View>
+      <Text style={styles.appName}>{APP_NAME}</Text>
       <View style={styles.dotsRow}>
         <Dot delay={0} />
         <Dot delay={150} />
@@ -105,6 +107,14 @@ const styles = StyleSheet.create({
   logo: {
     width: 96,
     height: 96,
+  },
+  appName: {
+    color: colors.cream,
+    fontFamily: fonts.serif,
+    fontSize: 20,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+    paddingHorizontal: spacing.xl,
   },
   dotsRow: {
     flexDirection: 'row',

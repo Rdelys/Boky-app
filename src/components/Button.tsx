@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
-import { colors, radius } from '../theme/colors';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors, fonts, radius, shadows } from '../theme/colors';
 
 type Props = {
   title: string;
@@ -11,39 +12,64 @@ type Props = {
 };
 
 /**
- * variant "primary"  -> bouton bordeaux plein (btn-modal-primary du site)
- * variant "gold"     -> bouton doré (btn-primary du site, CTA principaux)
+ * variant "primary"  -> bouton bordeaux en dégradé (btn-modal-primary du site)
+ * variant "gold"     -> bouton doré en dégradé (btn-primary du site, CTA principaux)
  * variant "ghost"    -> bouton contour (btn-ghost / btn-login du site)
  */
 export function Button({ title, onPress, variant = 'primary', loading, disabled }: Props) {
   const isDisabled = disabled || loading;
+
+  const content = loading ? (
+    <ActivityIndicator color={variant === 'gold' ? colors.maroon950 : colors.cream} />
+  ) : (
+    <Text
+      style={[
+        styles.text,
+        variant === 'gold' && styles.textDark,
+        variant === 'ghost' && styles.textGhost,
+      ]}
+    >
+      {title}
+    </Text>
+  );
+
+  if (variant === 'ghost') {
+    return (
+      <Pressable
+        onPress={onPress}
+        disabled={isDisabled}
+        style={({ pressed }) => [
+          styles.base,
+          styles.ghost,
+          isDisabled && styles.disabled,
+          pressed && !isDisabled && styles.pressed,
+        ]}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  const gradientColors: [string, string] =
+    variant === 'gold' ? [colors.gold, colors.goldDim] : [colors.maroon800, colors.maroon900];
 
   return (
     <Pressable
       onPress={onPress}
       disabled={isDisabled}
       style={({ pressed }) => [
-        styles.base,
-        variant === 'primary' && styles.primary,
-        variant === 'gold' && styles.gold,
-        variant === 'ghost' && styles.ghost,
         isDisabled && styles.disabled,
         pressed && !isDisabled && styles.pressed,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator color={variant === 'gold' ? colors.maroon950 : colors.cream} />
-      ) : (
-        <Text
-          style={[
-            styles.text,
-            variant === 'gold' && styles.textDark,
-            variant === 'ghost' && styles.textGhost,
-          ]}
-        >
-          {title}
-        </Text>
-      )}
+      <LinearGradient
+        colors={gradientColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={[styles.base, shadows.subtle]}
+      >
+        {content}
+      </LinearGradient>
     </Pressable>
   );
 }
@@ -58,12 +84,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'transparent',
   },
-  primary: { backgroundColor: colors.maroon900 },
-  gold: { backgroundColor: colors.gold },
   ghost: { backgroundColor: 'transparent', borderColor: colors.maroon800 },
   disabled: { opacity: 0.55 },
-  pressed: { opacity: 0.85 },
-  text: { color: colors.cream, fontWeight: '600', fontSize: 15 },
+  pressed: { opacity: 0.88, transform: [{ scale: 0.98 }] },
+  text: { color: colors.cream, fontFamily: fonts.sansSemiBold, fontSize: 15 },
   textDark: { color: colors.maroon950 },
   textGhost: { color: colors.maroon800 },
 });

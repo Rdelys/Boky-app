@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Book, fetchBooks, fetchCategories } from '../api/books';
 import { parseApiError } from '../api/client';
 import { BookCard } from '../components/BookCard';
@@ -67,9 +68,12 @@ export function BooksScreen({ navigation }: any) {
 
   return (
     <View style={styles.screen}>
-      <View style={styles.hero}>
-        <Text style={styles.heroTitle}>{t('books_heading')}</Text>
-
+      <LinearGradient
+        colors={[colors.maroon900, colors.maroon700]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.hero}
+      >
         <View style={styles.searchWrap}>
           <Ionicons name="search" size={16} color={colors.muted} style={{ marginRight: 8 }} />
           <TextInput
@@ -109,7 +113,7 @@ export function BooksScreen({ navigation }: any) {
             }}
           />
         )}
-      </View>
+      </LinearGradient>
 
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color={colors.maroon900} />
@@ -146,12 +150,6 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.xl,
     gap: spacing.sm,
     ...shadows.floating,
-  },
-  heroTitle: {
-    color: colors.cream,
-    fontFamily: fonts.serif,
-    fontSize: 22,
-    marginBottom: 4,
   },
   searchWrap: {
     flexDirection: 'row',

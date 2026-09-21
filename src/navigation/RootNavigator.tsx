@@ -1,8 +1,8 @@
+// src/navigation/RootNavigator.tsx
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
 
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
@@ -10,6 +10,9 @@ import { colors } from '../theme/colors';
 import { LoadingScreen } from '../components/LoadingScreen';
 import { AppHeaderTitle } from '../components/AppHeaderTitle';
 import { LanguageSwitcherNav } from '../components/LanguageSwitcher';
+import { GradientHeaderBackground } from '../components/GradientHeaderBackground';
+import { AppTabBar } from '../components/AppTabBar';
+import { APP_NAME } from '../constants/app';
 
 import { BooksScreen } from '../screens/BooksScreen';
 import { BookDetailScreen } from '../screens/BookDetailScreen';
@@ -21,11 +24,12 @@ import { ProfileScreen } from '../screens/ProfileScreen';
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
-// Header commun : fond bordeaux, titre avec logo, et sélecteur de langue
-// toujours visible en haut à droite — la traduction fonctionne hors-ligne
-// car les fichiers de langue sont embarqués dans l'app (src/i18n).
+// Header commun : fond bordeaux en dégradé, titre avec logo, et sélecteur de
+// langue toujours visible en haut à droite — la traduction fonctionne
+// hors-ligne car les fichiers de langue sont embarqués dans l'app (src/i18n).
 const baseScreenOptions = {
   headerStyle: { backgroundColor: colors.maroon900 },
+  headerBackground: () => <GradientHeaderBackground />,
   headerShadowVisible: false,
   headerTintColor: colors.cream,
   headerTitleStyle: { fontWeight: '700' as const },
@@ -39,7 +43,7 @@ function BooksStack() {
       <Stack.Screen
         name="BooksList"
         component={BooksScreen}
-        options={{ headerTitle: () => <AppHeaderTitle title={t('books_heading')} /> }}
+        options={{ headerTitle: () => <AppHeaderTitle title={APP_NAME} /> }}
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} options={{ title: '' }} />
       <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('auth_login_title') }} />
@@ -53,28 +57,8 @@ function MainTabs() {
   const { t } = useLocale();
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarActiveTintColor: colors.maroon900,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { height: 60, paddingBottom: 8, paddingTop: 6 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
-        tabBarIcon: ({ color, size, focused }) => {
-          const icon =
-            route.name === 'Books'
-              ? focused
-                ? 'book'
-                : 'book-outline'
-              : route.name === 'Orders'
-              ? focused
-                ? 'receipt'
-                : 'receipt-outline'
-              : focused
-              ? 'person'
-              : 'person-outline';
-          return <Ionicons name={icon as any} size={size} color={color} />;
-        },
-      })}
+      tabBar={(props) => <AppTabBar {...props} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tab.Screen name="Books" component={BooksStack} options={{ title: t('nav_books') }} />
       <Tab.Screen

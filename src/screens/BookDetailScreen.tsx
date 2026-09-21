@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Book, fetchBook, fetchPaymentAccounts, PaymentAccount } from '../api/books';
 import { placeOrder } from '../api/orders';
 import { parseApiError } from '../api/client';
@@ -98,7 +99,12 @@ export function BookDetailScreen({ route, navigation }: any) {
     <ScrollView style={styles.screen} contentContainerStyle={{ paddingBottom: 32 }}>
       <View style={styles.coverBanner}>
         <Image source={{ uri: book.image_url }} style={styles.coverBg} blurRadius={18} />
-        <View style={styles.coverBannerShade} />
+        <LinearGradient
+          colors={['rgba(61,11,21,.85)', 'rgba(85,16,29,.65)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.coverBannerShade}
+        />
         <View style={styles.headerRow}>
           <Image source={{ uri: book.image_url }} style={styles.cover} />
           <View style={{ flex: 1 }}>
@@ -268,7 +274,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: radius.xl,
   },
   coverBg: { ...StyleSheet.absoluteFillObject, opacity: 0.5 },
-  coverBannerShade: { ...StyleSheet.absoluteFillObject, backgroundColor: colors.maroon950, opacity: 0.72 },
+  coverBannerShade: { ...StyleSheet.absoluteFillObject },
   headerRow: { flexDirection: 'row', gap: 14 },
   cover: { width: 96, height: 128, borderRadius: 14, backgroundColor: colors.creamDim, ...shadows.floating },
   title: { fontSize: 19, fontFamily: fonts.serif, color: colors.cream, marginBottom: 2 },
