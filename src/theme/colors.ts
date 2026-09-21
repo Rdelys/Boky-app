@@ -37,12 +37,17 @@ export const colors = {
   statusLivreeText: '#395e26',
   statusAnnuleeBg: 'rgba(179,38,30,.1)',
   statusAnnuleeText: '#b3261e',
+
+  overlay: 'rgba(61,11,21,.55)',
+  white: '#ffffff',
 };
 
 export const radius = {
+  xs: 8,
   sm: 10,
   md: 14,
   lg: 20,
+  xl: 26,
   pill: 999,
 };
 
@@ -52,6 +57,7 @@ export const spacing = {
   md: 16,
   lg: 24,
   xl: 32,
+  xxl: 44,
 };
 
 export const fonts = {
@@ -62,6 +68,34 @@ export const fonts = {
   sans: 'Inter_400Regular',
   sansMedium: 'Inter_500Medium',
   sansSemiBold: 'Inter_600SemiBold',
+};
+
+/**
+ * Ombres cohérentes (iOS: shadow*, Android: elevation) — à spread dans les
+ * styles des cartes / boutons flottants pour un rendu moderne homogène.
+ */
+export const shadows = {
+  card: {
+    shadowColor: colors.maroon950,
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 3,
+  },
+  floating: {
+    shadowColor: colors.maroon950,
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 6,
+  },
+  subtle: {
+    shadowColor: colors.maroon950,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
 };
 
 export function orderStatusColors(status: string) {
@@ -77,4 +111,15 @@ export function orderStatusColors(status: string) {
     default:
       return { bg: colors.creamDim, text: colors.ink };
   }
+}
+
+/**
+ * Nombre de colonnes de la grille catalogue selon la largeur d'écran —
+ * couvre petits téléphones, grands téléphones, phablettes et tablettes.
+ */
+export function gridColumns(width: number) {
+  if (width >= 1100) return 5;
+  if (width >= 860) return 4;
+  if (width >= 560) return 3;
+  return 2;
 }

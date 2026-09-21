@@ -1,7 +1,7 @@
 import React from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Book } from '../api/books';
-import { colors, radius } from '../theme/colors';
+import { colors, fonts, radius, shadows } from '../theme/colors';
 import { useLocale } from '../context/LocaleContext';
 
 type Props = {
@@ -20,20 +20,28 @@ export function BookCard({ book, onPress }: Props) {
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.coverWrap}>
         <Image source={{ uri: book.image_url }} style={styles.cover} />
-        <View style={[styles.tag, book.etat !== 'neuf' && styles.tagUsed]}>
-          <Text style={styles.tagText}>{t(`book_condition_${book.etat}`)}</Text>
-        </View>
-        {!book.en_stock && (
-          <View style={styles.outOfStock}>
-            <Text style={styles.outOfStockText}>{t('books_out_of_stock')}</Text>
+
+        {/* voile bas pour lisibilité du prix, sans dépendance à un module de dégradé */}
+        <View style={styles.coverShade} pointerEvents="none" />
+
+        <View style={styles.topRow}>
+          <View style={[styles.tag, book.etat !== 'neuf' && styles.tagUsed]}>
+            <Text style={styles.tagText}>{t(`book_condition_${book.etat}`)}</Text>
           </View>
-        )}
+          {!book.en_stock && (
+            <View style={styles.outOfStock}>
+              <Text style={styles.outOfStockText}>{t('books_out_of_stock')}</Text>
+            </View>
+          )}
+        </View>
+
         {book.prix_achat != null && (
           <View style={styles.priceFloat}>
             <Text style={styles.priceFloatText}>{formatAr(book.prix_achat)}</Text>
           </View>
         )}
       </View>
+
       <View style={styles.body}>
         {book.categorie ? (
           <Text style={styles.genre} numberOfLines={1}>
@@ -49,9 +57,12 @@ export function BookCard({ book, onPress }: Props) {
           </Text>
         ) : null}
         {book.seller ? (
-          <Text style={styles.seller} numberOfLines={1}>
-            {book.seller.nom}
-          </Text>
+          <View style={styles.sellerRow}>
+            <View style={styles.sellerDot} />
+            <Text style={styles.seller} numberOfLines={1}>
+              {book.seller.nom}
+            </Text>
+          </View>
         ) : null}
       </View>
     </Pressable>
@@ -65,55 +76,66 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     overflow: 'hidden',
     margin: 6,
-    shadowColor: '#3d0b15',
-    shadowOpacity: 0.12,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 6 },
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(85,16,29,.06)',
+    ...shadows.card,
   },
-  pressed: { opacity: 0.9 },
+  pressed: { opacity: 0.92, transform: [{ scale: 0.99 }] },
   coverWrap: { aspectRatio: 3 / 4, backgroundColor: colors.creamDim },
   cover: { width: '100%', height: '100%' },
-  tag: {
+  coverShade: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
+    backgroundColor: 'rgba(30,7,12,.35)',
+  },
+  topRow: {
     position: 'absolute',
     top: 10,
     left: 10,
+    right: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  tag: {
     backgroundColor: 'rgba(92,138,55,.95)',
     borderRadius: radius.pill,
     paddingHorizontal: 9,
     paddingVertical: 4,
   },
   tagUsed: { backgroundColor: 'rgba(233,178,63,.95)' },
-  tagText: { color: colors.cream, fontSize: 10, fontWeight: '700' },
+  tagText: { color: colors.cream, fontSize: 10, fontFamily: fonts.sansSemiBold },
   outOfStock: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
     backgroundColor: 'rgba(179,38,30,.92)',
     borderRadius: radius.pill,
     paddingHorizontal: 9,
     paddingVertical: 4,
   },
-  outOfStockText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+  outOfStockText: { color: '#fff', fontSize: 10, fontFamily: fonts.sansSemiBold },
   priceFloat: {
     position: 'absolute',
     left: 10,
     bottom: 10,
-    backgroundColor: 'rgba(61,11,21,.6)',
+    backgroundColor: 'rgba(61,11,21,.72)',
     borderRadius: radius.pill,
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
-  priceFloatText: { color: colors.cream, fontWeight: '700', fontSize: 12 },
+  priceFloatText: { color: colors.cream, fontFamily: fonts.sansSemiBold, fontSize: 12 },
   body: { padding: 12 },
   genre: {
     color: colors.green700,
     fontSize: 10,
-    fontWeight: '700',
+    fontFamily: fonts.sansSemiBold,
     textTransform: 'uppercase',
+    letterSpacing: 0.4,
     marginBottom: 4,
   },
-  title: { color: colors.ink, fontSize: 14, fontWeight: '600', marginBottom: 2 },
-  author: { color: colors.muted, fontSize: 12, marginBottom: 4 },
-  seller: { color: '#b09c8c', fontSize: 11 },
+  title: { color: colors.ink, fontSize: 14, fontFamily: fonts.sansSemiBold, marginBottom: 2, lineHeight: 18 },
+  author: { color: colors.muted, fontSize: 12, fontFamily: fonts.sans, marginBottom: 6 },
+  sellerRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  sellerDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.goldDim },
+  seller: { color: '#b09c8c', fontSize: 11, fontFamily: fonts.sans, flexShrink: 1 },
 });

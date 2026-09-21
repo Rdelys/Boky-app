@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -12,7 +13,7 @@ import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { parseApiError } from '../api/client';
 import { Button } from '../components/Button';
-import { colors } from '../theme/colors';
+import { colors, fonts, radius, shadows, spacing } from '../theme/colors';
 
 export function RegisterScreen({ navigation }: any) {
   const { register } = useAuth();
@@ -46,7 +47,11 @@ export function RegisterScreen({ navigation }: any) {
 
   return (
     <KeyboardAvoidingView style={styles.screen} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView contentContainerStyle={{ padding: 20 }}>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.logoWrap}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+        </View>
+
         <View style={styles.card}>
           <Text style={styles.title}>{t('auth_create_account_title')}</Text>
           <Text style={styles.subtitle}>{t('auth_client_subtitle')}</Text>
@@ -85,7 +90,7 @@ export function RegisterScreen({ navigation }: any) {
 
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Button title={t('auth_submit_register')} onPress={submit} loading={loading} />
+          <Button title={t('auth_submit_register')} onPress={submit} loading={loading} variant="gold" />
 
           <Text style={styles.switchText}>
             {t('auth_already_account')}{' '}
@@ -100,24 +105,28 @@ export function RegisterScreen({ navigation }: any) {
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream },
-  card: { backgroundColor: colors.cardBg, borderRadius: 22, padding: 26 },
-  title: { fontSize: 22, fontWeight: '700', color: colors.ink, textAlign: 'center', marginBottom: 4 },
-  subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 20 },
+  screen: { flex: 1, backgroundColor: colors.maroon950 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
+  logoWrap: { alignItems: 'center', marginBottom: spacing.lg },
+  logo: { width: 76, height: 76 },
+  card: { backgroundColor: colors.cardBg, borderRadius: radius.xl, padding: 26, ...shadows.floating },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.ink, textAlign: 'center', marginBottom: 4 },
+  subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 20, fontFamily: fonts.sans },
   row: { flexDirection: 'row', gap: 12 },
   half: { flex: 1 },
-  label: { fontWeight: '600', color: colors.ink, marginBottom: 6, fontSize: 13 },
+  label: { fontFamily: fonts.sansSemiBold, color: colors.ink, marginBottom: 6, fontSize: 13 },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: radius.md,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
     marginBottom: 14,
     color: colors.ink,
     backgroundColor: '#fffdf9',
+    fontFamily: fonts.sans,
   },
-  error: { color: colors.danger, marginBottom: 10, fontSize: 13 },
-  switchText: { textAlign: 'center', color: colors.muted, marginTop: 16, fontSize: 13 },
-  switchLink: { color: colors.maroon800, fontWeight: '700' },
+  error: { color: colors.danger, marginBottom: 10, fontSize: 13, fontFamily: fonts.sans },
+  switchText: { textAlign: 'center', color: colors.muted, marginTop: 16, fontSize: 13, fontFamily: fonts.sans },
+  switchLink: { color: colors.maroon800, fontFamily: fonts.sansSemiBold },
 });

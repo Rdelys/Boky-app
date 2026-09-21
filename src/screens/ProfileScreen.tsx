@@ -1,19 +1,20 @@
 import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { Button } from '../components/Button';
-import { colors, radius } from '../theme/colors';
-import { SUPPORTED_LOCALES } from '../i18n';
+import { LanguageSwitcherChips } from '../components/LanguageSwitcher';
+import { colors, fonts, radius, shadows } from '../theme/colors';
 
 export function ProfileScreen() {
   const { user, logout } = useAuth();
-  const { t, locale, setLocale } = useLocale();
+  const { t } = useLocale();
 
   if (!user) return null;
 
   return (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ padding: 16 }}>
       <View style={styles.card}>
         <View style={styles.avatar}>
           <Text style={styles.avatarText}>{user.name.charAt(0).toUpperCase()}</Text>
@@ -26,43 +27,46 @@ export function ProfileScreen() {
 
       {user.profile && (
         <View style={styles.card}>
-          <InfoRow label={t('profile_location')} value={user.profile.localisation} />
-          <InfoRow label={t('profile_reason')} value={user.profile.motif_inscription} />
-          <InfoRow label={t('profile_books_wanted')} value={user.profile.types_livres_recherches} />
+          <View style={{ flex: 1 }}>
+            <InfoRow icon="location-outline" label={t('profile_location')} value={user.profile.localisation} />
+            <InfoRow icon="help-circle-outline" label={t('profile_reason')} value={user.profile.motif_inscription} />
+            <InfoRow icon="library-outline" label={t('profile_books_wanted')} value={user.profile.types_livres_recherches} />
+          </View>
         </View>
       )}
 
       <Text style={styles.sectionLabel}>Language / Fiteny / Langue</Text>
-      <View style={styles.localeRow}>
-        {SUPPORTED_LOCALES.map((code) => (
-          <Pressable
-            key={code}
-            onPress={() => setLocale(code)}
-            style={[styles.localeChip, locale === code && styles.localeChipActive]}
-          >
-            <Text style={[styles.localeChipText, locale === code && styles.localeChipTextActive]}>
-              {code.toUpperCase()}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
+      <LanguageSwitcherChips />
 
       <Button title={t('nav_logout')} variant="ghost" onPress={logout} />
-    </View>
+    </ScrollView>
   );
 }
 
-function InfoRow({ label, value }: { label: string; value: string | null }) {
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  value: string | null;
+}) {
   return (
     <View style={styles.infoRow}>
-      <Text style={styles.infoLabel}>{label}</Text>
-      <Text style={styles.infoValue}>{value || '—'}</Text>
+      <View style={styles.infoIconWrap}>
+        <Ionicons name={icon} size={15} color={colors.maroon800} />
+      </View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.infoLabel}>{label}</Text>
+        <Text style={styles.infoValue}>{value || '—'}</Text>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream, padding: 16 },
+  screen: { flex: 1, backgroundColor: colors.cream },
   card: {
     backgroundColor: colors.cardBg,
     borderRadius: radius.lg,
@@ -73,31 +77,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 14,
+    ...shadows.subtle,
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: colors.gold,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: colors.maroon950, fontWeight: '700', fontSize: 18 },
-  name: { fontSize: 16, fontWeight: '700', color: colors.ink },
-  email: { color: colors.muted, fontSize: 13 },
-  infoRow: { marginBottom: 10 },
-  infoLabel: { fontSize: 11, color: colors.muted, textTransform: 'uppercase', marginBottom: 2 },
-  infoValue: { color: colors.ink },
-  sectionLabel: { fontWeight: '700', color: colors.ink, marginBottom: 8 },
-  localeRow: { flexDirection: 'row', gap: 8, marginBottom: 20 },
-  localeChip: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
+  avatarText: { color: colors.maroon950, fontFamily: fonts.sansSemiBold, fontSize: 20 },
+  name: { fontSize: 16, fontFamily: fonts.sansSemiBold, color: colors.ink },
+  email: { color: colors.muted, fontSize: 13, fontFamily: fonts.sans },
+  infoRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 10, marginBottom: 14 },
+  infoIconWrap: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: 'rgba(85,16,29,.08)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
   },
-  localeChipActive: { backgroundColor: colors.maroon900, borderColor: colors.maroon900 },
-  localeChipText: { color: colors.ink, fontWeight: '600' },
-  localeChipTextActive: { color: colors.cream },
+  infoLabel: { fontSize: 11, color: colors.muted, textTransform: 'uppercase', marginBottom: 2, fontFamily: fonts.sansMedium },
+  infoValue: { color: colors.ink, fontFamily: fonts.sans },
+  sectionLabel: { fontFamily: fonts.sansSemiBold, color: colors.ink, marginBottom: 8 },
 });

@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
-import { KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, View } from 'react-native';
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { useLocale } from '../context/LocaleContext';
 import { parseApiError } from '../api/client';
 import { Button } from '../components/Button';
-import { colors } from '../theme/colors';
+import { colors, fonts, radius, shadows, spacing } from '../theme/colors';
 
 export function LoginScreen({ navigation }: any) {
   const { login } = useAuth();
@@ -31,63 +40,73 @@ export function LoginScreen({ navigation }: any) {
       style={styles.screen}
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <View style={styles.card}>
-        <Text style={styles.title}>{t('auth_login_title')}</Text>
-        <Text style={styles.subtitle}>{t('auth_login_subtitle')}</Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+        <View style={styles.logoWrap}>
+          <Image source={require('../../assets/images/logo.png')} style={styles.logo} resizeMode="contain" />
+        </View>
 
-        <Text style={styles.label}>{t('auth_email')}</Text>
-        <TextInput
-          value={email}
-          onChangeText={setEmail}
-          placeholder={t('auth_email_placeholder')}
-          placeholderTextColor={colors.muted}
-          autoCapitalize="none"
-          keyboardType="email-address"
-          style={styles.input}
-        />
+        <View style={styles.card}>
+          <Text style={styles.title}>{t('auth_login_title')}</Text>
+          <Text style={styles.subtitle}>{t('auth_login_subtitle')}</Text>
 
-        <Text style={styles.label}>{t('auth_password')}</Text>
-        <TextInput
-          value={password}
-          onChangeText={setPassword}
-          placeholder={t('auth_password_placeholder')}
-          placeholderTextColor={colors.muted}
-          secureTextEntry
-          style={styles.input}
-        />
+          <Text style={styles.label}>{t('auth_email')}</Text>
+          <TextInput
+            value={email}
+            onChangeText={setEmail}
+            placeholder={t('auth_email_placeholder')}
+            placeholderTextColor={colors.muted}
+            autoCapitalize="none"
+            keyboardType="email-address"
+            style={styles.input}
+          />
 
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+          <Text style={styles.label}>{t('auth_password')}</Text>
+          <TextInput
+            value={password}
+            onChangeText={setPassword}
+            placeholder={t('auth_password_placeholder')}
+            placeholderTextColor={colors.muted}
+            secureTextEntry
+            style={styles.input}
+          />
 
-        <Button title={t('auth_login_submit')} onPress={submit} loading={loading} />
+          {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Text style={styles.switchText}>
-          {t('auth_no_account')}{' '}
-          <Text style={styles.switchLink} onPress={() => navigation.navigate('Register')}>
-            {t('auth_signup_as_client')}
+          <Button title={t('auth_login_submit')} onPress={submit} loading={loading} variant="gold" />
+
+          <Text style={styles.switchText}>
+            {t('auth_no_account')}{' '}
+            <Text style={styles.switchLink} onPress={() => navigation.navigate('Register')}>
+              {t('auth_signup_as_client')}
+            </Text>
           </Text>
-        </Text>
-      </View>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.cream, justifyContent: 'center', padding: 20 },
-  card: { backgroundColor: colors.cardBg, borderRadius: 22, padding: 26 },
-  title: { fontSize: 22, fontWeight: '700', color: colors.ink, textAlign: 'center', marginBottom: 4 },
-  subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 20 },
-  label: { fontWeight: '600', color: colors.ink, marginBottom: 6, fontSize: 13 },
+  screen: { flex: 1, backgroundColor: colors.maroon950 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: spacing.lg },
+  logoWrap: { alignItems: 'center', marginBottom: spacing.lg },
+  logo: { width: 76, height: 76 },
+  card: { backgroundColor: colors.cardBg, borderRadius: radius.xl, padding: 26, ...shadows.floating },
+  title: { fontSize: 22, fontFamily: fonts.serif, color: colors.ink, textAlign: 'center', marginBottom: 4 },
+  subtitle: { textAlign: 'center', color: colors.muted, marginBottom: 22, fontFamily: fonts.sans },
+  label: { fontFamily: fonts.sansSemiBold, color: colors.ink, marginBottom: 6, fontSize: 13 },
   input: {
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: radius.md,
     paddingHorizontal: 14,
-    paddingVertical: 11,
+    paddingVertical: 12,
     marginBottom: 14,
     color: colors.ink,
     backgroundColor: '#fffdf9',
+    fontFamily: fonts.sans,
   },
-  error: { color: colors.danger, marginBottom: 10, fontSize: 13 },
-  switchText: { textAlign: 'center', color: colors.muted, marginTop: 16, fontSize: 13 },
-  switchLink: { color: colors.maroon800, fontWeight: '700' },
+  error: { color: colors.danger, marginBottom: 10, fontSize: 13, fontFamily: fonts.sans },
+  switchText: { textAlign: 'center', color: colors.muted, marginTop: 18, fontSize: 13, fontFamily: fonts.sans },
+  switchLink: { color: colors.maroon800, fontFamily: fonts.sansSemiBold },
 });

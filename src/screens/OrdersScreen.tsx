@@ -1,8 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { fetchOrders, Order } from '../api/orders';
 import { parseApiError } from '../api/client';
-import { orderStatusColors, colors, radius } from '../theme/colors';
+import { EmptyState } from '../components/EmptyState';
+import { orderStatusColors, colors, fonts, radius, shadows } from '../theme/colors';
 import { useLocale } from '../context/LocaleContext';
 
 function formatAr(n: number) {
@@ -45,19 +47,11 @@ export function OrdersScreen() {
   }
 
   if (error) {
-    return (
-      <View style={styles.center}>
-        <Text style={{ color: colors.danger, textAlign: 'center', paddingHorizontal: 24 }}>{error}</Text>
-      </View>
-    );
+    return <EmptyState icon="cloud-offline-outline" title={error} tone="danger" />;
   }
 
   if (orders.length === 0) {
-    return (
-      <View style={styles.center}>
-        <Text style={{ color: colors.muted }}>{t('order_none_yet')}</Text>
-      </View>
-    );
+    return <EmptyState icon="receipt-outline" title={t('order_none_yet')} />;
   }
 
   return (
@@ -66,7 +60,7 @@ export function OrdersScreen() {
       contentContainerStyle={{ padding: 16 }}
       data={orders}
       keyExtractor={(item) => String(item.id)}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.maroon900} />}
       renderItem={({ item }) => {
         const statusColors = orderStatusColors(item.statut);
         return (
@@ -84,9 +78,12 @@ export function OrdersScreen() {
               <Text style={styles.total}>{formatAr(item.total)}</Text>
             </View>
             {item.deliverer ? (
-              <Text style={styles.deliverer}>
-                {t('order_deliverer_label')}: {item.deliverer.nom} — {item.deliverer.telephone}
-              </Text>
+              <View style={styles.delivererRow}>
+                <Ionicons name="bicycle-outline" size={14} color={colors.muted} />
+                <Text style={styles.deliverer}>
+                  {item.deliverer.nom} — {item.deliverer.telephone}
+                </Text>
+              </View>
             ) : null}
           </View>
         );
@@ -100,26 +97,28 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: colors.cream },
   card: {
     backgroundColor: colors.cardBg,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    padding: 14,
-    marginBottom: 12,
+    padding: 16,
+    marginBottom: 14,
+    ...shadows.subtle,
   },
   cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
-  reference: { color: colors.muted, fontSize: 12 },
+  reference: { color: colors.muted, fontSize: 12, fontFamily: fonts.sans },
   statusBadge: { borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 3 },
-  statusText: { fontSize: 11, fontWeight: '700' },
-  bookTitle: { fontWeight: '700', color: colors.ink, fontSize: 15, marginBottom: 2 },
-  seller: { color: colors.muted, fontSize: 12, marginBottom: 8 },
+  statusText: { fontSize: 11, fontFamily: fonts.sansSemiBold },
+  bookTitle: { fontFamily: fonts.sansSemiBold, color: colors.ink, fontSize: 15, marginBottom: 2 },
+  seller: { color: colors.muted, fontSize: 12, marginBottom: 8, fontFamily: fonts.sans },
   cardFootRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(85,16,29,.08)',
+    borderTopColor: colors.border,
     paddingTop: 8,
   },
-  qty: { color: colors.ink },
-  total: { color: colors.maroon800, fontWeight: '700' },
-  deliverer: { marginTop: 8, fontSize: 12, color: colors.muted },
+  qty: { color: colors.ink, fontFamily: fonts.sans },
+  total: { color: colors.maroon800, fontFamily: fonts.sansSemiBold },
+  delivererRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
+  deliverer: { fontSize: 12, color: colors.muted, fontFamily: fonts.sans },
 });
