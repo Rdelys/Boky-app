@@ -45,3 +45,10 @@ export async function fetchPaymentAccounts() {
   const { data } = await apiClient.get<{ data: PaymentAccount[] }>('/payment-accounts');
   return data.data;
 }
+
+export type Villes = { data: string[]; ville_especes: string };
+
+export async function fetchVilles(): Promise<Villes> {
+  const { data } = await apiClient.get<Villes>('/villes');
+  return data;
+}

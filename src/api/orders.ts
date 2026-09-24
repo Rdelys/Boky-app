@@ -21,6 +21,12 @@ export type PlaceOrderPayload = {
   quantite: number;
   mode_paiement: string;
   reference_paiement: string;
+  adresse_livraison: string;
+  ville: string;
+  // Rempli uniquement si aucun compte n'est connecté (achat invité)
+  guest_name?: string;
+  guest_phone?: string;
+  guest_email?: string;
 };
 
 export async function fetchOrders() {
@@ -29,6 +35,13 @@ export async function fetchOrders() {
 }
 
 export async function placeOrder(payload: PlaceOrderPayload) {
-  const { data } = await apiClient.post<{ data: Order; message: string }>('/orders', payload);
+  const { data } = await apiClient.post<{ data: Order; message: string; invoice_url?: string }>(
+    '/orders',
+    payload
+  );
   return data;
 }
+
+
+
+

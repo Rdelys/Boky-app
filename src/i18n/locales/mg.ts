@@ -86,4 +86,17 @@ export default {
   common_close: 'Hidio',
   common_error_generic: 'Nisy olana. Andramo indray azafady.',
   common_offline: 'Tsy tratra ny mpizara.',
+
+      order_guest_legend :  'Ny mombamomba anao',
+order_guest_name_label : 'Anarana feno',
+order_guest_phone_label : 'Laharana finday',
+order_guest_address_label : 'Adiresy handefasana',
+order_guest_address_placeholder : 'Fokontany, arabe, marika fantatra...',
+order_guest_email_label : 'Mailaka (tsy voatery)',
+order_guest_email_placeholder : 'Handraisana ny fanamafisana',
+order_guest_account_hint : 'Tianao ve ny hanaraka ny baikonao any aoriana?',
+order_guest_account_link : 'Mamorona kaonty',
+order_guest_success_title : 'Voarakitra ny baiko!',
+order_guest_success_hint : "Tehirizo tsara ny kaodinao — hifandray aminao ny ekipanay amin'ny laharana nomenao mba hanamafisana ny fandefasana.",
+
 };

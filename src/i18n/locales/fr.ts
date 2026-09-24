@@ -88,4 +88,18 @@ export default {
   common_close: 'Fermer',
   common_error_generic: "Une erreur est survenue. Veuillez réessayer.",
   common_offline: 'Connexion impossible au serveur.',
+
+  order_guest_legend: 'Vos coordonnées',
+order_guest_name_label: 'Nom complet',
+order_guest_phone_label: 'Téléphone',
+order_guest_address_label: 'Adresse de livraison',
+order_guest_address_placeholder: 'Quartier, rue, point de repère...',
+order_guest_email_placeholder: 'Email (facultatif)',
+order_guest_account_hint: 'Vous voulez suivre vos commandes plus tard ?',
+order_guest_account_link: 'Créer un compte',
+order_city_label: 'Ville de livraison',
+order_city_placeholder: 'Choisissez votre ville',
+order_payment_cash: 'Espèces à la livraison',
+order_download_invoice: 'Télécharger la facture',
+
 };

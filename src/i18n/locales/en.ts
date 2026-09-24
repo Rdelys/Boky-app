@@ -86,4 +86,18 @@ export default {
   common_close: 'Close',
   common_error_generic: 'Something went wrong. Please try again.',
   common_offline: 'Could not reach the server.',
+
+     order_guest_legend : 'Your details',
+order_guest_name_label : 'Full name',
+order_guest_phone_label : 'Phone',
+order_guest_address_label : 'Delivery address',
+order_guest_address_placeholder : 'Neighborhood, street, landmark...',
+order_guest_email_label : 'Email (optional)',
+order_guest_email_placeholder : 'To receive the confirmation',
+order_guest_account_hint : 'Want to track your orders later?',
+order_guest_account_link : 'Create an account',
+order_guest_success_title : 'Order placed!',
+order_guest_success_hint : "Save your reference — our team will contact you at the number provided to confirm delivery.",
+
+order_download_invoice : 'Download invoice',
 };
