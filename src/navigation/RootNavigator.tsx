@@ -12,6 +12,7 @@ import { AppHeaderTitle } from '../components/AppHeaderTitle';
 import { LanguageSwitcherNav } from '../components/LanguageSwitcher';
 import { GradientHeaderBackground } from '../components/GradientHeaderBackground';
 import { AppTabBar } from '../components/AppTabBar';
+import { HeaderActions } from '../components/CartButton';
 import { APP_NAME } from '../constants/app';
 
 import { BooksScreen } from '../screens/BooksScreen';
@@ -20,6 +21,7 @@ import { LoginScreen } from '../screens/LoginScreen';
 import { RegisterScreen } from '../screens/RegisterScreen';
 import { OrdersScreen } from '../screens/OrdersScreen';
 import { ProfileScreen } from '../screens/ProfileScreen';
+import { CartScreen } from '../screens/CartScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -36,16 +38,25 @@ const baseScreenOptions = {
   headerRight: () => <LanguageSwitcherNav />,
 };
 
+// Pile "Livres" : langue + icône panier (avec badge) dans le header.
+// Le panier vit dans cette pile, donc il est accessible aux invités
+// comme aux clients connectés.
+const stackScreenOptions = {
+  ...baseScreenOptions,
+  headerRight: () => <HeaderActions />,
+};
+
 function BooksStack() {
   const { t } = useLocale();
   return (
-    <Stack.Navigator screenOptions={baseScreenOptions}>
+    <Stack.Navigator screenOptions={stackScreenOptions}>
       <Stack.Screen
         name="BooksList"
         component={BooksScreen}
         options={{ headerTitle: () => <AppHeaderTitle title={APP_NAME} /> }}
       />
       <Stack.Screen name="BookDetail" component={BookDetailScreen} options={{ title: '' }} />
+      <Stack.Screen name="Cart" component={CartScreen} options={{ title: t('cart_title') }} />
       <Stack.Screen name="Login" component={LoginScreen} options={{ title: t('auth_login_title') }} />
       <Stack.Screen name="Register" component={RegisterScreen} options={{ title: t('auth_create_account_title') }} />
       <Stack.Screen name="Orders" component={OrdersScreen} options={{ title: t('order_history_title') }} />
@@ -98,7 +109,7 @@ export function RootNavigator() {
 /**
  * Un visiteur non connecté peut quand même parcourir le catalogue
  * (comme sur le site) : on lui donne la pile "Livres", qui contient déjà
- * les écrans Login/Register accessibles depuis la fiche livre.
+ * les écrans Login/Register/Cart accessibles depuis la fiche livre et le header.
  */
 function BooksAndAuthGate() {
   return <BooksStack />;

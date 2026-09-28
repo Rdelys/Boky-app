@@ -14,16 +14,16 @@ export type Order = {
   seller: { id: number; nom: string } | null;
   deliverer: { nom: string; telephone: string } | null;
   created_at: string;
+  groupe_reference: string | null; 
+  facture_url: string | null;
 };
 
 export type PlaceOrderPayload = {
-  book_id: number;
-  quantite: number;
+  items: { book_id: number; quantite: number }[];
   mode_paiement: string;
   reference_paiement: string;
   adresse_livraison: string;
   ville: string;
-  // Rempli uniquement si aucun compte n'est connecté (achat invité)
   guest_name?: string;
   guest_phone?: string;
   guest_email?: string;
@@ -35,10 +35,12 @@ export async function fetchOrders() {
 }
 
 export async function placeOrder(payload: PlaceOrderPayload) {
-  const { data } = await apiClient.post<{ data: Order; message: string; invoice_url?: string }>(
-    '/orders',
-    payload
-  );
+  const { data } = await apiClient.post<{
+    data: Order[];
+    groupe_reference: string;
+    message: string;
+    invoice_url: string | null;
+  }>('/orders', payload);
   return data;
 }
 

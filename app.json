@@ -6,7 +6,9 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "backgroundColor": "#f6efdd",
+    "icon": "./assets/images/icon.png",
     "splash": {
+      "image": "./assets/images/splash-icon.png",
       "backgroundColor": "#55101d",
       "resizeMode": "contain"
     },
@@ -21,14 +23,19 @@
     "android": {
       "package": "mg.nyherinnyboky.app",
       "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "monochromeImage": "./assets/images/adaptive-icon-monochrome.png",
         "backgroundColor": "#55101d"
       }
     },
     "web": {
-      "bundler": "metro"
+      "bundler": "metro",
+      "favicon": "./assets/images/favicon.png"
     },
     "extra": {
-      "eas": {}
+      "eas": {
+        "projectId": "fdeb06f5-0676-4a98-aa20-a35ac4c5ad8d"
+      }
     }
   }
 }
