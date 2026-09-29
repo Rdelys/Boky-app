@@ -13,6 +13,11 @@ export type Book = {
   livraison_disponible: boolean;
   image_url: string;
   description?: string;
+  langue: string | null;
+  langue_label: string | null;
+  format: string | null;
+  format_label: string | null;
+  delai_livraison_label?: string;
   seller: { id: number; nom: string; localisation: string | null } | null;
 };
 

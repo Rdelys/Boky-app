@@ -20,8 +20,6 @@ export function BookCard({ book, onPress }: Props) {
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.coverWrap}>
         <Image source={{ uri: book.image_url }} style={styles.cover} />
-
-        {/* voile bas pour lisibilité du prix, sans dépendance à un module de dégradé */}
         <View style={styles.coverShade} pointerEvents="none" />
 
         <View style={styles.topRow}>
@@ -56,6 +54,26 @@ export function BookCard({ book, onPress }: Props) {
             {book.auteur}
           </Text>
         ) : null}
+
+        {(book.langue_label || book.format_label) && (
+          <View style={styles.metaRow}>
+            {book.langue_label ? (
+              <View style={styles.metaChip}>
+                <Text style={styles.metaChipText} numberOfLines={1}>
+                  {book.langue_label}
+                </Text>
+              </View>
+            ) : null}
+            {book.format_label ? (
+              <View style={styles.metaChip}>
+                <Text style={styles.metaChipText} numberOfLines={1}>
+                  {book.format_label}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        )}
+
         {book.seller ? (
           <View style={styles.sellerRow}>
             <View style={styles.sellerDot} />
@@ -76,8 +94,6 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     overflow: 'hidden',
     margin: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(85,16,29,.06)',
     ...shadows.card,
   },
   pressed: { opacity: 0.92, transform: [{ scale: 0.99 }] },
@@ -135,6 +151,14 @@ const styles = StyleSheet.create({
   },
   title: { color: colors.ink, fontSize: 14, fontFamily: fonts.sansSemiBold, marginBottom: 2, lineHeight: 18 },
   author: { color: colors.muted, fontSize: 12, fontFamily: fonts.sans, marginBottom: 6 },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 6 },
+  metaChip: {
+    backgroundColor: 'rgba(92,138,55,.1)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+  },
+  metaChipText: { color: colors.green700, fontSize: 10, fontFamily: fonts.sansMedium },
   sellerRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   sellerDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: colors.goldDim },
   seller: { color: '#b09c8c', fontSize: 11, fontFamily: fonts.sans, flexShrink: 1 },

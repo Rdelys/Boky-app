@@ -66,7 +66,6 @@ export function BookDetailScreen({ route, navigation }: any) {
 
   const total = (book.prix_achat ?? 0) * quantity;
   const isSellerAccount = !!user && user.role !== 'client';
-  // Achat autorisé pour un invité OU un client connecté (jamais un vendeur).
   const canOrder = !isSellerAccount && book.prix_achat != null && book.en_stock;
 
   const addToCart = () => {
@@ -103,6 +102,16 @@ export function BookDetailScreen({ route, navigation }: any) {
               <View style={[styles.badge, styles.badgeGold]}>
                 <Text style={styles.badgeText}>{t(`book_condition_${book.etat}`)}</Text>
               </View>
+              {book.langue_label ? (
+                <View style={[styles.badge, styles.badgeMuted]}>
+                  <Text style={styles.badgeText}>{book.langue_label}</Text>
+                </View>
+              ) : null}
+              {book.format_label ? (
+                <View style={[styles.badge, styles.badgeMuted]}>
+                  <Text style={styles.badgeText}>{book.format_label}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -114,6 +123,9 @@ export function BookDetailScreen({ route, navigation }: any) {
         <View style={styles.summary}>
           <Row label={t('order_unit_price')} value={book.prix_achat != null ? formatAr(book.prix_achat) : '—'} />
           <Row label={t('order_available_label')} value={String(book.quantite)} />
+          {book.delai_livraison_label ? (
+            <Row label={t('order_delivery_estimate_label')} value={book.delai_livraison_label} />
+          ) : null}
 
           {canOrder && (
             <>
@@ -203,6 +215,7 @@ const styles = StyleSheet.create({
   badgeRow: { flexDirection: 'row', gap: 6, flexWrap: 'wrap' },
   badge: { backgroundColor: 'rgba(92,138,55,.4)', borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 4 },
   badgeGold: { backgroundColor: 'rgba(233,178,63,.3)' },
+  badgeMuted: { backgroundColor: 'rgba(246,239,221,.16)' },
   badgeText: { fontSize: 11, fontFamily: fonts.sansSemiBold, color: colors.cream },
   description: {
     color: colors.ink,
