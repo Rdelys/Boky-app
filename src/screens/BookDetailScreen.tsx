@@ -15,6 +15,7 @@ import { Book, fetchBook } from '../api/books';
 import { parseApiError } from '../api/client';
 import { Button } from '../components/Button';
 import { EmptyState } from '../components/EmptyState';
+import { PriceTag } from '../components/PriceTag';
 import { colors, fonts, radius, shadows } from '../theme/colors';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
@@ -25,8 +26,9 @@ function formatAr(n: number) {
 }
 
 /**
- * Fiche livre : affichage + choix de la quantité + "Ajouter au panier".
- * La commande (coordonnées, ville, paiement, facture) se fait dans CartScreen.
+ * Fiche livre : affichage (promo, délai heures/jours) + choix de la quantité
+ * + "Ajouter au panier". La commande (coordonnées, livraison, paiement,
+ * facture) se fait dans CartScreen.
  */
 export function BookDetailScreen({ route, navigation }: any) {
   const { id } = route.params;
@@ -64,6 +66,7 @@ export function BookDetailScreen({ route, navigation }: any) {
     return <EmptyState icon="alert-circle-outline" title={error ?? t('common_error_generic')} tone="danger" />;
   }
 
+  // prix_achat = prix client payé (déjà remisé si promotion)
   const total = (book.prix_achat ?? 0) * quantity;
   const isSellerAccount = !!user && user.role !== 'client';
   const canOrder = !isSellerAccount && book.prix_achat != null && book.en_stock;
@@ -88,7 +91,14 @@ export function BookDetailScreen({ route, navigation }: any) {
           style={styles.coverBannerShade}
         />
         <View style={styles.headerRow}>
-          <Image source={{ uri: book.image_url }} style={styles.cover} />
+          <View>
+            <Image source={{ uri: book.image_url }} style={styles.cover} />
+            {book.en_promo && book.promo_label ? (
+              <View style={styles.coverPromo}>
+                <Text style={styles.coverPromoText}>{book.promo_label}</Text>
+              </View>
+            ) : null}
+          </View>
           <View style={{ flex: 1 }}>
             <Text style={styles.title}>{book.titre}</Text>
             {book.seller ? <Text style={styles.seller}>{book.seller.nom}</Text> : null}
@@ -112,6 +122,11 @@ export function BookDetailScreen({ route, navigation }: any) {
                   <Text style={styles.badgeText}>{book.format_label}</Text>
                 </View>
               ) : null}
+              {book.pages_label ? (
+                <View style={[styles.badge, styles.badgeMuted]}>
+                  <Text style={styles.badgeText}>{book.pages_label}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
         </View>
@@ -121,7 +136,12 @@ export function BookDetailScreen({ route, navigation }: any) {
         {book.description ? <Text style={styles.description}>{book.description}</Text> : null}
 
         <View style={styles.summary}>
-          <Row label={t('order_unit_price')} value={book.prix_achat != null ? formatAr(book.prix_achat) : '—'} />
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>{t('order_unit_price')}</Text>
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+              <PriceTag book={book} size="md" />
+            </View>
+          </View>
           <Row label={t('order_available_label')} value={String(book.quantite)} />
           {book.delai_livraison_label ? (
             <Row label={t('order_delivery_estimate_label')} value={book.delai_livraison_label} />
@@ -190,7 +210,7 @@ function Row({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.summaryRow}>
       <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue}>{value}</Text>
+      <Text style={[styles.summaryValue, { flexShrink: 1, textAlign: 'right' }]}>{value}</Text>
     </View>
   );
 }
@@ -209,6 +229,16 @@ const styles = StyleSheet.create({
   coverBannerShade: { ...StyleSheet.absoluteFillObject },
   headerRow: { flexDirection: 'row', gap: 14 },
   cover: { width: 96, height: 128, borderRadius: 14, backgroundColor: colors.creamDim, ...shadows.floating },
+  coverPromo: {
+    position: 'absolute',
+    top: 8,
+    left: 8,
+    backgroundColor: '#b3261e',
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  coverPromoText: { color: '#fff', fontSize: 10, fontFamily: fonts.sansSemiBold },
   title: { fontSize: 19, fontFamily: fonts.serif, color: colors.cream, marginBottom: 2 },
   seller: { color: 'rgba(246,239,221,.8)', fontSize: 13, marginBottom: 2, fontFamily: fonts.sans },
   author: { color: 'rgba(246,239,221,.8)', fontSize: 13, marginBottom: 8, fontFamily: fonts.sans },
@@ -238,7 +268,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     ...shadows.subtle,
   },
-  summaryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  summaryRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
   summaryTotalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: 10 },
   summaryLabel: { color: colors.ink, fontSize: 13, fontFamily: fonts.sans },
   summaryValue: { color: colors.ink, fontFamily: fonts.sansSemiBold },

@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { fetchOrders, Order } from '../api/orders';
 import { parseApiError } from '../api/client';
 import { EmptyState } from '../components/EmptyState';
 import { orderStatusColors, colors, fonts, radius, shadows } from '../theme/colors';
 import { useLocale } from '../context/LocaleContext';
+import { downloadInvoice } from '../utils/invoice';
 
 function formatAr(n: number) {
   return `${Math.round(n).toLocaleString('fr-FR')} Ar`;
@@ -63,10 +64,22 @@ export function OrdersScreen() {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.maroon900} />}
       renderItem={({ item }) => {
         const statusColors = orderStatusColors(item.statut);
+        const liv = item.livraison;
+        const feeText = !liv
+          ? ''
+          : liv.frais_gratuit && liv.frais === 0
+          ? t('delivery_fee_free')
+          : liv.frais_a_confirmer
+          ? t('delivery_fee_tbd')
+          : formatAr(liv.frais);
+
         return (
           <View style={styles.card}>
             <View style={styles.cardHeaderRow}>
-              <Text style={styles.reference}>{item.reference}</Text>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.reference}>{item.reference}</Text>
+                {item.groupe_reference ? <Text style={styles.reference}>{item.groupe_reference}</Text> : null}
+              </View>
               <View style={[styles.statusBadge, { backgroundColor: statusColors.bg }]}>
                 <Text style={[styles.statusText, { color: statusColors.text }]}>{item.statut_label}</Text>
               </View>
@@ -77,13 +90,34 @@ export function OrdersScreen() {
               <Text style={styles.qty}>x{item.quantite}</Text>
               <Text style={styles.total}>{formatAr(item.total)}</Text>
             </View>
+
+            {liv ? (
+              <View style={styles.infoRow}>
+                <Ionicons name="location-outline" size={14} color={colors.muted} />
+                <Text style={styles.info}>
+                  {liv.type_label} · {liv.lieu} · {t('delivery_fee_label')} : {feeText}
+                </Text>
+              </View>
+            ) : null}
+
             {item.deliverer ? (
-              <View style={styles.delivererRow}>
+              <View style={styles.infoRow}>
                 <Ionicons name="bicycle-outline" size={14} color={colors.muted} />
-                <Text style={styles.deliverer}>
+                <Text style={styles.info}>
                   {item.deliverer.nom} — {item.deliverer.telephone}
                 </Text>
               </View>
+            ) : null}
+
+            {item.facture_url ? (
+              <Pressable
+                onPress={() => downloadInvoice(item.facture_url!, item.groupe_reference ?? item.reference)}
+                style={styles.invoiceBtn}
+                hitSlop={6}
+              >
+                <Ionicons name="document-text-outline" size={14} color={colors.maroon800} />
+                <Text style={styles.invoiceText}>{t('order_download_invoice')}</Text>
+              </Pressable>
             ) : null}
           </View>
         );
@@ -104,7 +138,7 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     ...shadows.subtle,
   },
-  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, gap: 8 },
   reference: { color: colors.muted, fontSize: 12, fontFamily: fonts.sans },
   statusBadge: { borderRadius: radius.pill, paddingHorizontal: 10, paddingVertical: 3 },
   statusText: { fontSize: 11, fontFamily: fonts.sansSemiBold },
@@ -119,6 +153,19 @@ const styles = StyleSheet.create({
   },
   qty: { color: colors.ink, fontFamily: fonts.sans },
   total: { color: colors.maroon800, fontFamily: fonts.sansSemiBold },
-  delivererRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
-  deliverer: { fontSize: 12, color: colors.muted, fontFamily: fonts.sans },
+  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 8 },
+  info: { flex: 1, fontSize: 12, color: colors.muted, fontFamily: fonts.sans },
+  invoiceBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    gap: 6,
+    marginTop: 12,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.maroon800,
+  },
+  invoiceText: { color: colors.maroon800, fontFamily: fonts.sansSemiBold, fontSize: 12 },
 });

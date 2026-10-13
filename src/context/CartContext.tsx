@@ -9,7 +9,10 @@ export type CartLine = { book: Book; quantite: number };
 type CartValue = {
   lines: CartLine[];
   count: number;
+  /** Sous-total client (prix déjà remisés si promo). */
   total: number;
+  /** Économie totale réalisée grâce aux promotions. */
+  economie: number;
   add: (book: Book, quantite: number) => 'ok' | 'capped';
   setQuantity: (bookId: number, quantite: number) => void;
   remove: (bookId: number) => void;
@@ -35,18 +38,22 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (ready) AsyncStorage.setItem(KEY, JSON.stringify(lines)).catch(() => {});
   }, [lines, ready]);
 
+  // Le résultat ('ok' | 'capped') est calculé depuis l'état courant, pas dans
+  // l'updater de setLines (qui s'exécute plus tard) : le message "stock
+  // plafonné" s'affiche donc correctement.
   const add: CartValue['add'] = (book, quantite) => {
-    let result: 'ok' | 'capped' = 'ok';
+    const existing = lines.find((l) => l.book.id === book.id);
+    const wanted = (existing?.quantite ?? 0) + quantite;
+    const final = Math.min(wanted, book.quantite);
+
     setLines((prev) => {
-      const existing = prev.find((l) => l.book.id === book.id);
-      const wanted = (existing?.quantite ?? 0) + quantite;
-      const final = Math.min(wanted, book.quantite);
-      if (final < wanted) result = 'capped';
-      return existing
+      const current = prev.find((l) => l.book.id === book.id);
+      return current
         ? prev.map((l) => (l.book.id === book.id ? { book, quantite: final } : l))
         : [...prev, { book, quantite: final }];
     });
-    return result;
+
+    return final < wanted ? 'capped' : 'ok';
   };
 
   const setQuantity = (bookId: number, quantite: number) =>
@@ -59,7 +66,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const remove = (bookId: number) => setLines((prev) => prev.filter((l) => l.book.id !== bookId));
   const clear = () => setLines([]);
 
-  // Relit prix/stock côté serveur (comme Cart::lines() sur le site) ; retire les livres supprimés.
+  // Relit prix (promo incluse) et stock côté serveur, comme Cart::lines() sur le site ;
+  // retire les livres supprimés.
   const refresh = useCallback(async () => {
     const current = lines;
     const updated = await Promise.all(
@@ -81,6 +89,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       lines,
       count: lines.reduce((s, l) => s + l.quantite, 0),
       total: lines.reduce((s, l) => s + (l.book.prix_achat ?? 0) * l.quantite, 0),
+      economie: lines.reduce(
+        (s, l) =>
+          l.book.en_promo && l.book.prix_original != null && l.book.prix_achat != null
+            ? s + Math.max(0, l.book.prix_original - l.book.prix_achat) * l.quantite
+            : s,
+        0
+      ),
       add,
       setQuantity,
       remove,

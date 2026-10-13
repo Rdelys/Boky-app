@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { getItemAsync, setItemAsync, deleteItemAsync } from './storage';
 import { API_URL } from '../config/env';
+import { i18n } from '../i18n';
 
 const TOKEN_KEY = 'nhb_auth_token';
 
@@ -24,12 +25,14 @@ export async function setStoredToken(token: string | null): Promise<void> {
   }
 }
 
-// Attache automatiquement le token Bearer (Sanctum) à chaque requête.
+// Attache le token Bearer (Sanctum) + la langue de l'app (X-Locale) à chaque
+// requête : le serveur renvoie ainsi libellés et messages dans la bonne langue.
 apiClient.interceptors.request.use(async (config) => {
   const token = await getStoredToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers['X-Locale'] = i18n.locale;
   return config;
 });
 

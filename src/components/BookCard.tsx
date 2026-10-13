@@ -15,6 +15,7 @@ function formatAr(n: number) {
 
 export function BookCard({ book, onPress }: Props) {
   const { t } = useLocale();
+  const promo = !!book.en_promo && book.prix_original != null;
 
   return (
     <Pressable onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
@@ -23,8 +24,15 @@ export function BookCard({ book, onPress }: Props) {
         <View style={styles.coverShade} pointerEvents="none" />
 
         <View style={styles.topRow}>
-          <View style={[styles.tag, book.etat !== 'neuf' && styles.tagUsed]}>
-            <Text style={styles.tagText}>{t(`book_condition_${book.etat}`)}</Text>
+          <View style={styles.tagsCol}>
+            <View style={[styles.tag, book.etat !== 'neuf' && styles.tagUsed]}>
+              <Text style={styles.tagText}>{t(`book_condition_${book.etat}`)}</Text>
+            </View>
+            {promo && book.promo_label ? (
+              <View style={styles.promoTag}>
+                <Text style={styles.promoTagText}>{book.promo_label}</Text>
+              </View>
+            ) : null}
           </View>
           {!book.en_stock && (
             <View style={styles.outOfStock}>
@@ -34,7 +42,8 @@ export function BookCard({ book, onPress }: Props) {
         </View>
 
         {book.prix_achat != null && (
-          <View style={styles.priceFloat}>
+          <View style={[styles.priceFloat, promo && styles.priceFloatPromo]}>
+            {promo ? <Text style={styles.priceOld}>{formatAr(book.prix_original as number)}</Text> : null}
             <Text style={styles.priceFloatText}>{formatAr(book.prix_achat)}</Text>
           </View>
         )}
@@ -55,7 +64,15 @@ export function BookCard({ book, onPress }: Props) {
           </Text>
         ) : null}
 
-        {(book.langue_label || book.format_label) && (
+        {book.delai_livraison_label ? (
+          <View style={styles.deliveryChip}>
+            <Text style={styles.deliveryChipText} numberOfLines={1}>
+              {book.delai_livraison_label}
+            </Text>
+          </View>
+        ) : null}
+
+        {(book.langue_label || book.format_label || book.pages_label) && (
           <View style={styles.metaRow}>
             {book.langue_label ? (
               <View style={styles.metaChip}>
@@ -68,6 +85,13 @@ export function BookCard({ book, onPress }: Props) {
               <View style={styles.metaChip}>
                 <Text style={styles.metaChipText} numberOfLines={1}>
                   {book.format_label}
+                </Text>
+              </View>
+            ) : null}
+            {book.pages_label ? (
+              <View style={styles.metaChip}>
+                <Text style={styles.metaChipText} numberOfLines={1}>
+                  {book.pages_label}
                 </Text>
               </View>
             ) : null}
@@ -114,7 +138,9 @@ const styles = StyleSheet.create({
     right: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
+  tagsCol: { gap: 6, alignItems: 'flex-start' },
   tag: {
     backgroundColor: 'rgba(92,138,55,.95)',
     borderRadius: radius.pill,
@@ -123,6 +149,13 @@ const styles = StyleSheet.create({
   },
   tagUsed: { backgroundColor: 'rgba(233,178,63,.95)' },
   tagText: { color: colors.cream, fontSize: 10, fontFamily: fonts.sansSemiBold },
+  promoTag: {
+    backgroundColor: '#b3261e',
+    borderRadius: radius.pill,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+  },
+  promoTagText: { color: '#fff', fontSize: 10, fontFamily: fonts.sansSemiBold },
   outOfStock: {
     backgroundColor: 'rgba(179,38,30,.92)',
     borderRadius: radius.pill,
@@ -139,6 +172,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 5,
   },
+  priceFloatPromo: { backgroundColor: 'rgba(179,38,30,.94)', borderRadius: radius.md },
+  priceOld: {
+    color: 'rgba(255,255,255,.8)',
+    fontFamily: fonts.sans,
+    fontSize: 10,
+    textDecorationLine: 'line-through',
+  },
   priceFloatText: { color: colors.cream, fontFamily: fonts.sansSemiBold, fontSize: 12 },
   body: { padding: 12 },
   genre: {
@@ -151,6 +191,16 @@ const styles = StyleSheet.create({
   },
   title: { color: colors.ink, fontSize: 14, fontFamily: fonts.sansSemiBold, marginBottom: 2, lineHeight: 18 },
   author: { color: colors.muted, fontSize: 12, fontFamily: fonts.sans, marginBottom: 6 },
+  deliveryChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(92,138,55,.14)',
+    borderRadius: radius.pill,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginBottom: 6,
+    maxWidth: '100%',
+  },
+  deliveryChipText: { color: colors.green700, fontSize: 10, fontFamily: fonts.sansSemiBold },
   metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 5, marginBottom: 6 },
   metaChip: {
     backgroundColor: 'rgba(92,138,55,.1)',
