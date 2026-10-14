@@ -75,7 +75,12 @@ export type DeliveryConfig = {
   zones: DeliveryZone[];
 };
 
-export async function fetchBooks(params: { q?: string; categorie?: string; page?: number }) {
+export async function fetchBooks(params: {
+  q?: string;
+  categorie?: string;
+  page?: number;
+  per_page?: number;
+}) {
   const { data } = await apiClient.get<{
     data: Book[];
     meta: { current_page: number; last_page: number; total: number; per_page: number };

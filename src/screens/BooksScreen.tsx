@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -20,6 +20,8 @@ import { EmptyState } from '../components/EmptyState';
 import { colors, fonts, gridColumns, radius, shadows, spacing } from '../theme/colors';
 import { useLocale } from '../context/LocaleContext';
 
+const PER_PAGE = 30; // maximum accepté par l'API
+
 export function BooksScreen({ navigation }: any) {
   const { t } = useLocale();
   const { width } = useWindowDimensions();
@@ -31,39 +33,111 @@ export function BooksScreen({ navigation }: any) {
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [lastPage, setLastPage] = useState(1);
 
-  const load = useCallback(async (q: string, categorie: string | null) => {
-    try {
-      setError(null);
-      const res = await fetchBooks({ q, categorie: categorie ?? undefined });
-      setBooks(res.data);
-    } catch (e) {
-      setError(parseApiError(e).message);
-    }
-  }, []);
+  // Ignore les réponses d'anciennes requêtes (recherche rapide, refresh, etc.)
+  const requestId = useRef(0);
+  // Verrou synchrone : évite les doubles appels de onEndReached
+  const fetchingMore = useRef(false);
 
+  const load = useCallback(
+    async (q: string, categorie: string | null, pageNum = 1) => {
+      const id = ++requestId.current;
+      try {
+        setError(null);
+        const res = await fetchBooks({
+          q,
+          categorie: categorie ?? undefined,
+          page: pageNum,
+          per_page: PER_PAGE,
+        });
+        if (id !== requestId.current) return;
+
+        setBooks((prev) => {
+          if (pageNum === 1) return res.data;
+          // Déduplication au cas où un livre est ajouté pendant la navigation
+          const known = new Set(prev.map((b) => b.id));
+          return [...prev, ...res.data.filter((b) => !known.has(b.id))];
+        });
+        setPage(res.meta.current_page);
+        setLastPage(res.meta.last_page);
+      } catch (e) {
+        if (id !== requestId.current) return;
+        // Une erreur sur la page 1 vide la liste ; sur les suivantes on garde l'existant
+        if (pageNum === 1) setBooks([]);
+        setError(parseApiError(e).message);
+      }
+    },
+    []
+  );
+
+  // Catégories (une seule fois)
   useEffect(() => {
     fetchCategories()
       .then(setCategories)
       .catch(() => setCategories([]));
-    setLoading(true);
-    load('', null).finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Chargement initial + recherche / catégorie (avec debounce) : repart de la page 1
   useEffect(() => {
-    const timeout = setTimeout(() => {
-      load(query, activeCategory);
-    }, 350);
+    const isFirst = requestId.current === 0;
+    const timeout = setTimeout(
+      async () => {
+        if (isFirst) setLoading(true);
+        fetchingMore.current = false;
+        setLoadingMore(false);
+        await load(query, activeCategory, 1);
+        setLoading(false);
+      },
+      isFirst ? 0 : 350
+    );
     return () => clearTimeout(timeout);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [query, activeCategory]);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await load(query, activeCategory);
+    fetchingMore.current = false;
+    setLoadingMore(false);
+    await load(query, activeCategory, 1);
     setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (fetchingMore.current || loading || refreshing || error || page >= lastPage) return;
+    fetchingMore.current = true;
+    setLoadingMore(true);
+    await load(query, activeCategory, page + 1);
+    fetchingMore.current = false;
+    setLoadingMore(false);
+  };
+
+  const retryMore = async () => {
+    if (fetchingMore.current) return;
+    fetchingMore.current = true;
+    setLoadingMore(true);
+    await load(query, activeCategory, page + 1);
+    fetchingMore.current = false;
+    setLoadingMore(false);
+  };
+
+  const renderFooter = () => {
+    if (loadingMore) {
+      return <ActivityIndicator style={{ marginVertical: 16 }} color={colors.maroon900} />;
+    }
+    // Erreur sur une page suivante : bouton "Réessayer"
+    if (error && books.length > 0) {
+      return (
+        <Pressable onPress={retryMore} style={styles.retryBtn}>
+          <Ionicons name="refresh" size={14} color={colors.maroon900} />
+          <Text style={styles.retryText}>{error}</Text>
+        </Pressable>
+      );
+    }
+    return null;
   };
 
   return (
@@ -117,7 +191,7 @@ export function BooksScreen({ navigation }: any) {
 
       {loading ? (
         <ActivityIndicator style={{ marginTop: 40 }} color={colors.maroon900} />
-      ) : error ? (
+      ) : error && books.length === 0 ? (
         <EmptyState icon="cloud-offline-outline" title={error} tone="danger" />
       ) : books.length === 0 ? (
         <EmptyState icon="book-outline" title={t('catalog_no_results')} />
@@ -129,9 +203,21 @@ export function BooksScreen({ navigation }: any) {
           numColumns={numColumns}
           columnWrapperStyle={numColumns > 1 ? { paddingHorizontal: 6 } : undefined}
           contentContainerStyle={{ paddingBottom: 24, paddingTop: 8 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.maroon900} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={colors.maroon900}
+            />
+          }
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={renderFooter}
           renderItem={({ item }) => (
-            <BookCard book={item} onPress={() => navigation.navigate('BookDetail', { id: item.id })} />
+            <BookCard
+              book={item}
+              onPress={() => navigation.navigate('BookDetail', { id: item.id })}
+            />
           )}
         />
       )}
@@ -169,4 +255,19 @@ const styles = StyleSheet.create({
   categoryChipActive: { backgroundColor: colors.gold },
   categoryChipText: { color: colors.cream, fontFamily: fonts.sansMedium, fontSize: 12 },
   categoryChipTextActive: { color: colors.maroon950, fontFamily: fonts.sansSemiBold },
+  retryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginVertical: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignSelf: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.cream,
+    borderWidth: 1,
+    borderColor: colors.maroon900,
+  },
+  retryText: { color: colors.maroon900, fontFamily: fonts.sansMedium, fontSize: 12 },
 });
